@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>WaveSurfer Example</title>
+        <style>
+            .item {
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>WaveSurfer Example</h1>
+        <div id="wave">waiting for waveform...</div>
+        <!-- <textarea id="text"></textarea> -->
+        <script src = "/lib/wavesurfer/wavesurfer.js"> </script>
+        <script src = "/lib/wavesurfer/webaudio.js"> </script>
+        <script src = "/lib/wavesurfer/audioelement.js"> </script>
+        <script src = "/lib/wavesurfer/drawer.js"> </script>
+        <script src = "/lib/wavesurfer/drawer.canvas.js"> </script>
+        <script src = "/src/wavtest.js"> </script>
+        <script src = "/socket.io/socket.io.js"> </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+        <script>
+            $("#waveform").text("Hi there!");
+
+            /*
+            var socket = io.connect();
+            socket.on("ack", function(data){
+                console.log("Ack received: " + data);
+            });
+            socket.on("networkState", function(data){
+                $("#networkState").text("Majority vote = " + data.majority);
+            });
+            */
+            /* This illustrates sending data to the server
+            $(document).ready(function(){
+                $("#text").keypress(function(e){
+                    socket.emit('client_data', {'letter': String.fromCharCode(e.charCode)});
+                });
+            });
+            */
+        </script>
+        <button onclick="playWaveFile()">Play wav file...</button>
+    </body>
+</html>

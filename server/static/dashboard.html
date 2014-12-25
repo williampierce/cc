@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <title>Missio Cube Network Status</title>
+        <style>
+            .item {
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Missio Cube Network Status</h1>
+        <div id="networkState">waiting for update...</div>
+        <!-- <textarea id="text"></textarea> -->
+        <script src = "/socket.io/socket.io.js"> </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+        <script>
+            var socket = io.connect();
+            socket.on("ack", function(data){
+                console.log("Ack received: " + data);
+            });
+            socket.on("networkState", function(data){
+                $("#networkState").text("Majority vote = " + data.majority);
+            });
+
+            /* This illustrates sending data to the server
+            $(document).ready(function(){
+                $("#text").keypress(function(e){
+                    socket.emit('client_data', {'letter': String.fromCharCode(e.charCode)});
+                });
+            });
+            */
+        </script>
+    </body>
+</html>
