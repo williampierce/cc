@@ -28,9 +28,7 @@ function start(route, handle)
         function postEnd()
         {
             // End of posted data
-            // If the request is for a static or library page, return it; otherwise, route the request
-            //if(serveStaticPage(request, pathname, response))
-            //    return;
+            // If the request is for a static file, return it; otherwise, route the request
             if(serveStaticFile(request, pathname, response))
                 return;
             route(handle, request, pathname, query, postedData, response);
@@ -78,59 +76,40 @@ function start(route, handle)
     console.log('Server running on port ' + g_serverPort);
 }
 
-// This doesn't currently handle nesting of static files
-function serveStaticPage(request, pathname, response)
-{
-    // Allow a special case to play with static pages
-    var pathDirs = pathname.split("/");
-
-    // pathDirs[0] will be the empty string before the first "/"
-    if(pathDirs[1] == "static" && pathDirs.length == 3)
-    {
-        var pagePath = path.join(__dirname, "static", pathDirs[2]);
-        // console.log("Attempting to serve page: " + pagePath);
-
-        var input = fs.createReadStream(pagePath);
-        input.on("data", function(data) { response.write(data); });
-
-        input.on("error", function(err) { 
-                console.log("Error reading static file"); 
-                response.writeHead(404, {"Content-Type": "text/plain"});
-                response.end("File not found"); });
-
-        input.on("end", function() { response.end(); });
-
-        return true;
-    }
-    return false;
-}
-
 function serveStaticFile(request, pathname, response)
 {
     // Serve library files under "<server>/lib/"
-    var pathDirs = pathname.split("/");
+    var pathDirs     = pathname.split("/");
+    var content_type = "";
 
     // pathDirs[0] will be the empty string before the first "/"
-    if((pathDirs[1] == "html" || pathDirs[1] == "js" || pathDirs[1] == "lib" || pathDirs[1] == "data") && pathDirs.length >= 3)
-    {
-        // var pagePath = __dirname.concat(pathname);
-        var pagePath = path.join(__dirname, '../client', pathname);
-        console.log("Attempting to serve page: " + pagePath);
+    if(pathDirs.length < 3)
+        return false;
 
-        response.writeHead(200, {"Content-Type": "text/html"});
-        var input = fs.createReadStream(pagePath);
-        input.on("data", function(data) { response.write(data); });
+    if(pathDirs[1] == "html")
+        content_type = "text/html";
+    else if(pathDirs[1] == "js" || pathDirs[1] == "lib")
+        content_type = "text/javascript";
+    else if(pathDirs[1] == "data")
+        content_type = "application/octet-stream";
+    else
+        return false;
+       
+    var pagePath = path.join(__dirname, '../client', pathname);
+    console.log("Attempting to serve page: " + pagePath);
 
-        input.on("error", function(err) { 
-                console.log("Error reading static file"); 
-                response.writeHead(404, {"Content-Type": "text/plain"});
-                response.end("File not found"); });
+    response.writeHead(200, {"Content-Type": content_type});
+    var input = fs.createReadStream(pagePath);
+    input.on("data", function(data) { response.write(data); });
 
-        input.on("end", function() { response.end(); });
+    input.on("error", function(err) { 
+        console.log("Error reading static file"); 
+        response.writeHead(404, {"Content-Type": "text/plain"});
+        response.end("File not found"); });
 
-        return true;
-    }
-    return false;
+    input.on("end", function() { response.end(); });
+
+    return true;
 }
 
 exports.start = start;

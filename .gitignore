@@ -28,8 +28,7 @@ node_modules
 .lock-wscript
 
 # vim
-.swp
+*.swp
 
 tmp
-
 
