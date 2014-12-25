@@ -29,8 +29,8 @@ function start(route, handle)
         {
             // End of posted data
             // If the request is for a static or library page, return it; otherwise, route the request
-            if(serveStaticPage(request, pathname, response))
-                return;
+            //if(serveStaticPage(request, pathname, response))
+            //    return;
             if(serveStaticFile(request, pathname, response))
                 return;
             route(handle, request, pathname, query, postedData, response);
@@ -111,12 +111,13 @@ function serveStaticFile(request, pathname, response)
     var pathDirs = pathname.split("/");
 
     // pathDirs[0] will be the empty string before the first "/"
-    if((pathDirs[1] == "html" || pathDirs[1] == "src" || pathDirs[1] == "lib" || pathDirs[1] == "data") && pathDirs.length >= 3)
+    if((pathDirs[1] == "html" || pathDirs[1] == "js" || pathDirs[1] == "lib" || pathDirs[1] == "data") && pathDirs.length >= 3)
     {
-        var pagePath = __dirname.concat(pathname);
+        // var pagePath = __dirname.concat(pathname);
+        var pagePath = path.join(__dirname, '../client', pathname);
         console.log("Attempting to serve page: " + pagePath);
 
-        response.writeHead(200, {"Content-Type": "text/javascript"});
+        response.writeHead(200, {"Content-Type": "text/html"});
         var input = fs.createReadStream(pagePath);
         input.on("data", function(data) { response.write(data); });
 
