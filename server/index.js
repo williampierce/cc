@@ -1,5 +1,6 @@
 var server = require("./server");
 var router = require("./router");
+var config = require("../common/config").server_config;
 var requestHandlers = require("./requestHandlers");
 
 var handle = {}
@@ -8,7 +9,8 @@ var handle = {}
 handle["/test"]            = requestHandlers.test;
 
 // Agent requests
-handle["/reportState"]     = requestHandlers.reportState;
+handle[config.upload_sample_path] = requestHandlers.uploadSample;
+handle["/reportState"]            = requestHandlers.reportState;
 
 // User requests
 handle["/getNetworkState"] = requestHandlers.getNetworkState;

@@ -2,12 +2,11 @@ var http      = require('http');
 var url       = require('url');
 var fs        = require('fs');
 var path      = require('path');
+var config    = require('../common/config').server_config;
 var clientMgr = require('./clientMgr');
 
-var g_serverPort = 8765;
-
 // Given a routing function and a mapping from pathnames to request handlers, this
-// function will create a server to handle http requests on port g_serverPort.
+// function will create a server to handle http requests on port config.server_port.
 // If a pathname has the form "/static/<page>", then the specified page will be
 // delivered and no handler will be called.
 function start(route, handle)
@@ -44,7 +43,7 @@ function start(route, handle)
     }
 
     var server = http.createServer(onRequest);
-    server.listen(g_serverPort); 
+    server.listen(config.server_port); 
 
     // Set up socket.io
     var io = require('socket.io')(server);
@@ -73,7 +72,7 @@ function start(route, handle)
         });
     });
 
-    console.log('Server running on port ' + g_serverPort);
+    console.log('Server running on port ' + config.server_port);
 }
 
 function serveStaticFile(request, pathname, response)

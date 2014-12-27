@@ -3,8 +3,11 @@
 // Provide a function for each type of request, as determined by the router, typically
 // by examining the pathname.
 
+var fs          = require("fs");
+var path        = require("path");
 var util        = require("util");
 var querystring = require("querystring");
+var config      = require("../common/config").server_config;
 var logic       = require("./logic");     // business logic
 
 
@@ -19,6 +22,15 @@ function test(request, query, data, response)
 
 
 // *** Device/Agent to Server ***
+
+// Device uploads sample file
+function uploadSample(request, query, data, response)
+{
+    var filename  = path.basename(query);
+    var file_path = path.join(config.sample_files_dir, filename);
+
+    console.log("Saving file: " + file_path);
+}
 
 // Agent reports device state using JSON
 //     agent_id: <string>
@@ -80,6 +92,7 @@ function setState(request, query, data, response)
 }
 
 exports.test            = test;
+exports.uploadSample    = uploadSample;
 exports.reportState     = reportState;
 exports.getNetworkState = getNetworkState;
 exports.setState        = setState;
