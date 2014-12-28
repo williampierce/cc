@@ -25,9 +25,20 @@ function uploadFile(sample_file)
         console.log('problem with request: ' + e.message);
     });
 
-    // write data to request body
-    req.write("Uploading file...\n");
-    req.end();
+    var input = fs.createReadStream(sample_file);
+
+    input.on('data', function (chunk) {
+       req.write(chunk, 'binary');
+    });
+
+    input.on('end', function() {
+        req.end();
+    });
+
+    input.on('error', function(err) {
+        console.log('Error: ' + err);
+        req.end(err);
+    });
 }
 
 function uploadSamples()
