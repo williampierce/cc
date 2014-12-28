@@ -26,10 +26,16 @@ function test(request, query, data, response)
 // Device uploads sample file
 function uploadSample(request, query, data, response)
 {
-    var filename  = path.basename(query);
-    var file_path = path.join(config.sample_files_dir, filename);
-
-    console.log("Saving file: " + file_path);
+    // Expects query: "filename=<filename>"
+    var filename  = query['filename'];
+    
+    if(filename)
+    {
+        var file_path = path.join(config.sample_files_dir, filename);
+        console.log("uploadSample, file_path: " + file_path);
+    }
+    else
+        console.log("uploadSample, missing 'filename' field");
 }
 
 // Agent reports device state using JSON
