@@ -25,12 +25,69 @@ function start(route, handle)
         if(serveStaticFile(request, pathname, response))
             return;
 
+        if(uploadBinaryFile(request, pathname, query, response))
+            return;
+
         serveJsonRequest(route, handle, request, response);
     }
 
     var server = http.createServer(onRequest);
     server.listen(config.server_port); 
     console.log('Server running on port ' + config.server_port);
+}
+
+function uploadBinaryFile(request, pathname, query, response)
+{
+    // Handle "/upload_sample?filename=<filename>"
+    if(pathname != config.upload_sample_path)
+        return false;
+
+    console.log("Uploading binary file...");
+
+    // Expects query: "filename=<filename>"
+    var filename  = query['filename'];
+    
+    if(!filename)
+    {
+        console.log("uploadBinaryFile, missing 'filename' field");
+        response.writeHead(400, {"Content-Type": "text/plain"});
+        response.end("Bad request"); 
+        return true; // request complete
+    }
+
+    var file_path = path.join(config.sample_files_dir, filename);
+    console.log("uploadBinaryFile, file_path: " + file_path);
+    var output = fs.createWriteStream(file_path);
+
+    output.on("error", function(error) { 
+        console.log("Write stream error: " + error);
+        response.writeHead(500, {"Content-Type": "text/plain"});
+        response.end("Internal server error"); 
+    });
+
+    output.on("open", function() {
+        console.log("Write stream open");
+
+        function postData(chunk)
+        {
+            console.log("Received POST data chunk ");
+            output.write(chunk);
+        }
+
+        function postEnd()
+        {
+            output.end();
+            console.log("uploadBinaryFile, upload complete");
+            response.writeHead(200, {"Content-Type": "text/plain"});
+            response.end("Upload successful"); 
+        }
+
+        request.setEncoding("binary");
+        request.addListener("data", postData);
+        request.addListener("end",  postEnd);
+    });
+
+    return true;
 }
 
 function serveJsonRequest(route, handle, request, response)
