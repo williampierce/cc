@@ -8,7 +8,7 @@ function uploadFile(sample_file)
     var options = {
         host: config.server_ip,
         port: config.server_port,
-        path: config.upload_sample_path,
+        path: config.upload_sample_path + "?filename=" + path.basename(sample_file),
         method: 'POST'
     };
 
