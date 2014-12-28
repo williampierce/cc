@@ -13,6 +13,7 @@ var server = {
 };
 
 var device = {
+    server_ip : '192.168.1.100',
     sample_files_dir : path.join(__dirname, '../tmp'),
 };
 
