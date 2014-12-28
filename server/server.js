@@ -13,66 +13,47 @@ function start(route, handle)
 {
     function onRequest(request, response)
     {
-        var request_parse = url.parse(request.url);
+        var request_parse = url.parse(request.url, true);
         var pathname      = request_parse.pathname;
         var query         = request_parse.query;
-        var postedData    = "";
-
-        function postData(chunk)
-        {
-            console.log("Received POST data chunk '" + chunk + "'");
-            postedData += chunk;
-        }
-
-        function postEnd()
-        {
-            // End of posted data
-            // If the request is for a static file, return it; otherwise, route the request
-            if(serveStaticFile(request, pathname, response))
-                return;
-            route(handle, request, pathname, query, postedData, response);
-        }
 
         console.log("HTTP " + request.method + " request for " + pathname + " received");
         if(query)
-            console.log("  Query: " + query);
+            console.log("  Query: " + JSON.stringify(query));
 
-        request.setEncoding("utf8");
-        request.addListener("data", postData);
-        request.addListener("end",  postEnd);
+        // If the request is for a static file, return it
+        if(serveStaticFile(request, pathname, response))
+            return;
+
+        serveJsonRequest(route, handle, request, response);
     }
 
     var server = http.createServer(onRequest);
     server.listen(config.server_port); 
-
-    // Set up socket.io
-    var io = require('socket.io')(server);
-
-    io.on("connect", function(socket){
-        socket.emit("ack", "Welcome, socket number " + socket.id + " !");
-
-        // Register the socket with the client manager
-        clientMgr.register(socket);
-
-        // Send the date every second
-        /*
-        setInterval(function(){
-            clientMgr.broadcastState({});
-            // socket.emit("date", {"date": new Date()});
-        }, 1000);
-        */
-
-        // Capture client events
-        socket.on("client_data", function(data){
-            process.stdout.write(data.letter);
-        });
-
-        socket.on("disconnect", function(){
-            clientMgr.deRegister(socket);
-        });
-    });
-
     console.log('Server running on port ' + config.server_port);
+}
+
+function serveJsonRequest(route, handle, request, response)
+{
+    var request_parse = url.parse(request.url, true);
+    var pathname      = request_parse.pathname;
+    var query         = request_parse.query;
+    var postedData    = "";
+
+    function postData(chunk)
+    {
+        console.log("Received POST data chunk '" + chunk + "'");
+        postedData += chunk;
+    }
+
+    function postEnd()
+    {
+        route(handle, request, pathname, query, postedData, response);
+    }
+
+    request.setEncoding("utf8");
+    request.addListener("data", postData);
+    request.addListener("end",  postEnd);
 }
 
 function serveStaticFile(request, pathname, response)
