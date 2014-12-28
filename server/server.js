@@ -70,8 +70,7 @@ function uploadBinaryFile(request, pathname, query, response)
 
         function postData(chunk)
         {
-            console.log("Received POST data chunk ");
-            output.write(chunk);
+            output.write(chunk, 'binary');
         }
 
         function postEnd()

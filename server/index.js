@@ -7,10 +7,14 @@ var requestHandlers = require("./requestHandlers");
 var handle = {}
 
 // Make sure binary files directory exists before proceeding.
-if(!fs.exists(config.sample_files_dir))
+try
 {
-    console.log("Creating sample files directory: " + config.sample_files_dir);
+    console.log("Creating sample files directory (if necessary): " + config.sample_files_dir);
     fs.mkdirSync(config.sample_files_dir);
+}
+catch(error)
+{
+    //console.log(error.message);
 }
 
 // Test/debug
