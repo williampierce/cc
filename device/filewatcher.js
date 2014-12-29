@@ -1,14 +1,14 @@
 var fs = require('fs');
-var http = require('http');
 var path = require('path');
+var http = require('http');
 var config = require('../common/config').device_config;
 
-function uploadFile(sample_file)
+function uploadAndDeleteFile(file_path)
 {
     var options = {
         host: config.server_ip,
         port: config.server_port,
-        path: config.upload_sample_path + "?filename=" + path.basename(sample_file),
+        path: config.upload_sample_path + "?filename=" + path.basename(file_path),
         method: 'POST'
     };
 
@@ -25,29 +25,36 @@ function uploadFile(sample_file)
         console.log('problem with request: ' + e.message);
     });
 
-    var input = fs.createReadStream(sample_file);
+    var input = fs.createReadStream(file_path);
 
     input.on('data', function (chunk) {
        req.write(chunk, 'binary');
     });
 
     input.on('end', function() {
+        fs.unlink(file_path);
         req.end();
     });
 
     input.on('error', function(err) {
-        console.log('Error: ' + err);
-        req.end(err);
+        console.log('Error: ' + err.message);
+        req.end(err.message);
     });
 }
 
-function uploadSamples()
+function uploadAndDeleteFiles(dir_path)
 {
     // Upload, then delete, any .wav files to the server
-    
-    // Quick test
-    var sample_file = path.join(config.sample_files_dir, "test.wav");
-    uploadFile(sample_file);
+    fs.readdir(dir_path, function(err, files) {
+        if(err) {
+            console.log('readdir failed: ' + err);
+            return;
+        }
+        for(var i = 0; i < files.length; i++) {
+            console.log('Found sample: ' + files[i]);
+            uploadAndDeleteFile(path.join(dir_path, files[i]));
+        }
+    });
 }
 
 console.log('sample_files_dir: ' + config.sample_files_dir);
@@ -56,5 +63,5 @@ console.log('sample_files_dir: ' + config.sample_files_dir);
 // check for new additions.
 fs.watch(config.sample_files_dir, function (event, filename) {
     console.log('fs.watch file: ' + filename + ', event: ' + event);
-    uploadSamples();
+    uploadAndDeleteFiles(config.sample_files_dir);
 });
