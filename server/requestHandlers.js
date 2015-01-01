@@ -57,6 +57,31 @@ function reportState(request, query, data, response)
 
 // *** Operator to Server ***
 
+// /sample_list
+function getSampleList(request, query, data, response)
+{
+    console.log("Function getSampleList called...");
+    
+    // Provide the client with the list of samples in the samples directory.
+    fs.readdir(config.sample_files_dir, function(err, files) {
+        if(err) {
+            console.log('getSampleList, readdir failed: ' + err);
+            response.writeHead(505, {"Content-Type": "text/plain"});
+            response.end("Internal server error (getSampleList)");
+            return;
+        }
+        var jsonData = JSON.stringify(files);
+
+        var headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': jsonData.length
+        };
+
+        response.writeHead(200, headers);
+        response.end(jsonData);
+    });
+}
+
 // Operator requests network state
 //     <server>/getNetworkState
 //
@@ -100,5 +125,6 @@ function setState(request, query, data, response)
 exports.test            = test;
 exports.uploadSample    = uploadSample;
 exports.reportState     = reportState;
+exports.getSampleList   = getSampleList;
 exports.getNetworkState = getNetworkState;
 exports.setState        = setState;

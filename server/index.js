@@ -25,6 +25,7 @@ handle[config.upload_sample_path] = requestHandlers.uploadSample;
 handle["/reportState"]            = requestHandlers.reportState;
 
 // User requests
+handle["/sample_list"]     = requestHandlers.getSampleList;
 handle["/getNetworkState"] = requestHandlers.getNetworkState;
 handle["/setState"]        = requestHandlers.setState;
 
