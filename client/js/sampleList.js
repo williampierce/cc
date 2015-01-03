@@ -3,19 +3,21 @@ function playWaveFile()
     wavesurfer.play();
 }
 
-function loadWave(container, wave_path)
+function loadWave(jqueryWaveName, jqueryWaveContainer, wave_path)
 {
     var wavesurfer = Object.create(WaveSurfer);
 
     wavesurfer.init({
-        //container: document.querySelector(container_id),
-        container: container,
-        waveColor: 'violet',
-        progressColor: 'purple',
+        container: jqueryWaveContainer[0],
+        waveColor: '#00F0F0',
+        progressColor: '#00A0A0',
+        //waveColor: 'violet',
+        //progressColor: 'purple',
         cursorWidth: 0
     });
     
     wavesurfer.load(wave_path);
+    jqueryWaveName.click(function() { wavesurfer.play(); });
 }
 
 function mainLoop()
@@ -35,7 +37,7 @@ function mainLoop()
             var col2 = $("<td>").attr("id", sampleId).appendTo(row);
 
             console.log(sampleId);
-            loadWave(col2[0], '/data/wav_files/Side_Left.wav');
+            loadWave(col1, col2, '/data/' + sampleName);
         }
     });
 }

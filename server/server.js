@@ -81,7 +81,7 @@ function uploadBinaryFile(request, pathname, query, response)
             response.end("Upload successful"); 
         }
 
-        request.setEncoding("binary");
+        //request.setEncoding("binary"); // only specify encoding when converting to strings
         request.addListener("data", postData);
         request.addListener("end",  postEnd);
     });
@@ -122,16 +122,25 @@ function serveStaticFile(request, pathname, response)
     if(pathDirs.length < 3)
         return false;
 
-    if(pathDirs[1] == "html")
+    var pageRoot;
+
+    if(pathDirs[1] == "html") {
+        pageRoot = path.join(__dirname, '../client');
         content_type = "text/html";
-    else if(pathDirs[1] == "js" || pathDirs[1] == "lib")
+    }
+    else if(pathDirs[1] == "js" || pathDirs[1] == "lib") {
+        pageRoot = path.join(__dirname, '../client');
         content_type = "text/javascript";
+    }
     else if(pathDirs[1] == "data")
+    {
+        pageRoot = path.join(__dirname, '..'); // data folder at top level, shared with server
         content_type = "application/octet-stream";
+    }
     else
         return false;
        
-    var pagePath = path.join(__dirname, '../client', pathname);
+    var pagePath = path.join(pageRoot, pathname);
     console.log("Attempting to serve page: " + pagePath);
 
     response.writeHead(200, {"Content-Type": content_type});
