@@ -2,14 +2,43 @@
     <head>
         <title>Chain Check Samples</title>
         <style>
-            .item {
+            h1 {
+                text-align: center;
+            }
+            body {
+                font-size: 100%; 
+                font-family: "Comic Sans MS", cursive, sans-serif;
+            }
+            table {
+                width: 100%;
+            }
+            td {
                 padding: 10px;
+            }
+            button:focus {
+                outline: 0;
+            }
+            #checkEngineLight {
+                float: right;
+                font-size: 1.5em;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                border-radius: 8px;
+                border: solid 2px #20538D;
+                background: #C0E0C0;
+            }
+            #checkEngineLight.selected{
+                float: right;
+                font-size: 1.5em;
+                font-family: "Comic Sans MS", cursive, sans-serif;
+                border-radius: 8px;
+                border: solid 2px #20538D;
+                background: #F06040;
             }
         </style>
     </head>
     <body>
+        <button id='checkEngineLight'>Check Engine</button>
         <h1>Chain Check Samples</h1>
-        <div id="wave"> </div>
 
         <div id="waveList"> </div>
 

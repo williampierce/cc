@@ -56,7 +56,7 @@ function mainLoop()
                     var sampleId = "wave" + i;
                     var col2 = $("<td>").attr("id", sampleId).appendTo(row);
 
-                    var wavesurfer = loadWave(col1, col2, '/data/' + sampleName);
+                    var wavesurfer = loadWave(col1, col2, '/data/wav/' + sampleName);
                     activeWavesurfers.push(wavesurfer);
                 }
             }
@@ -65,4 +65,11 @@ function mainLoop()
         });
 }
 
-$(document).ready(mainLoop);
+$(document).ready(function() {
+    $('#checkEngineLight').click(function() {
+        console.log('Engine light clicked');
+        $('#checkEngineLight').toggleClass('selected');
+    });
+    mainLoop();
+});
+

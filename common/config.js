@@ -9,7 +9,7 @@ var common = {
 };
 
 var server = {
-    sample_files_dir : path.join(__dirname, '../data'),
+    sample_files_dir : path.join(__dirname, '../data/wav'),
 };
 
 var device = {
