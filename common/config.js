@@ -10,6 +10,7 @@ var common = {
 
 var server = {
     sample_files_dir : path.join(__dirname, '../data/wav'),
+    maint_touch_file_path : path.join(__dirname, '../data/maint_requested'),
 };
 
 var device = {

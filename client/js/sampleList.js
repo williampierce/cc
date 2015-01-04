@@ -61,15 +61,19 @@ function mainLoop()
                 }
             }
         }).always(function() {
-            setTimeout(mainLoop, 5000);
+            setTimeout(mainLoop, 20000);
         });
 }
 
 $(document).ready(function() {
-    $('#checkEngineLight').click(function() {
-        console.log('Engine light clicked');
-        $('#checkEngineLight').toggleClass('selected');
+    $('#maintenanceLight').click(function() {
+        console.log('Maintenance light clicked');
+        $(this).toggleClass('selected');
+
+        var value = $(this).is('.selected') ? 'on' : 'off';
+        $.get('/set_maintenance_light?value=' + value);
     });
+
     mainLoop();
 });
 

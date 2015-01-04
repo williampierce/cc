@@ -23,6 +23,7 @@ function test(request, query, data, response)
 
 // *** Device/Agent to Server ***
 
+// not used...
 // Device uploads sample file
 function uploadSample(request, query, data, response)
 {
@@ -38,6 +39,7 @@ function uploadSample(request, query, data, response)
         console.log("uploadSample, missing 'filename' field");
 }
 
+// not used...
 // Agent reports device state using JSON
 //     agent_id: <string>
 //     face:     1..6
@@ -82,6 +84,39 @@ function sampleList(request, query, data, response)
     });
 }
 
+function setMaintenanceLight(request, query, data, response)
+{
+    console.log('setMaintenanceLight called...');
+
+    // Expects query: "value=on|off"
+    var value = query['value'].toLowerCase();
+
+    response.writeHead(200, { 'Content-Type': 'text/plain', });
+
+    if(value == 'on') {
+        fs.open(config.maint_touch_file_path, "wx", function (err, fd) {
+            if(!err) {
+                fs.close(fd, function (err) {
+                    if(err) {
+                        console.log('Error closing file ' + config.maint_touch_file_path + ', ' + err.message);
+                    }
+                });
+            }
+        });
+                         
+        console.log('Maintenance light turned on');
+        response.write('Maintenance light turned on');
+    }
+    else {
+        fs.unlink(config.maint_touch_file_path, function (err) { /* ignore err for missing file */ });
+        console.log('Maintenance light turned off');
+        response.write('Maintenance light turned off');
+    }
+
+    response.end();
+}
+
+// not used...
 // Operator requests network state
 //     <server>/getNetworkState
 //
@@ -103,6 +138,7 @@ function getNetworkState(request, query, data, response)
     response.end(jsonData);
 }
 
+// not used...
 // Operator sets device state using a query string
 //     <server>/setState?agent_id=<string>&face=<1..6>
 //
@@ -122,9 +158,12 @@ function setState(request, query, data, response)
     response.end("OK (setState)");
 }
 
-exports.test            = test;
-exports.uploadSample    = uploadSample;
-exports.reportState     = reportState;
-exports.sampleList      = sampleList;
-exports.getNetworkState = getNetworkState;
-exports.setState        = setState;
+exports.test                = test;
+exports.sampleList          = sampleList;
+exports.setMaintenanceLight = setMaintenanceLight;
+
+//exports.uploadSample    = uploadSample;
+//exports.reportState     = reportState;
+//exports.getNetworkState = getNetworkState;
+//exports.setState        = setState;
+

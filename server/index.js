@@ -18,15 +18,12 @@ catch(error)
 }
 
 // Test/debug
-handle["/test"]            = requestHandlers.test;
+handle["/test"] = requestHandlers.test;
 
-// Agent requests
-handle[config.upload_sample_path] = requestHandlers.uploadSample;
-handle["/reportState"]            = requestHandlers.reportState;
+// Device requests
 
 // User requests
-handle["/sample_list"]     = requestHandlers.sampleList;
-handle["/getNetworkState"] = requestHandlers.getNetworkState;
-handle["/setState"]        = requestHandlers.setState;
+handle["/sample_list"]           = requestHandlers.sampleList;
+handle["/set_maintenance_light"] = requestHandlers.setMaintenanceLight;  
 
 server.start(router.route, handle);
