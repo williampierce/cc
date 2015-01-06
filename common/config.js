@@ -15,7 +15,8 @@ var server = {
 
 var device = {
     // Default setting for testing with localhost
-    server_ip : '127.0.0.1',
+    //server_ip : '127.0.0.1',
+    server_ip : '192.168.1.8',
     sample_files_dir : path.join(__dirname, '../device/tmp'),
 };
 
