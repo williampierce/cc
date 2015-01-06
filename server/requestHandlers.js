@@ -21,45 +21,36 @@ function test(request, query, data, response)
 }
 
 
-// *** Device/Agent to Server ***
+// *** Device to Server ***
 
-// not used...
-// Device uploads sample file
-function uploadSample(request, query, data, response)
+function exchangeDeviceState(request, query, data, response)
 {
-    // Expects query: "filename=<filename>"
-    var filename  = query['filename'];
-    
-    if(filename)
-    {
-        var file_path = path.join(config.sample_files_dir, filename);
-        console.log("uploadSample, file_path: " + file_path);
+    if(!data) {
+        console.log('Empty data');
+        var headers = {
+            'Content-Type': 'text/plain'
+        };
+        response.writeHead(400, headers);
+        response.end('400 Bad request');
+        return;
     }
-    else
-        console.log("uploadSample, missing 'filename' field");
-}
+    var uploadState = JSON.parse(data); 
+    var downloadState = logic.exchangeDeviceState(uploadState);
 
-// not used...
-// Agent reports device state using JSON
-//     agent_id: <string>
-//     face:     1..6
-function reportState(request, query, data, response) 
-{
-    // console.log("Function reportState called, updating state...");
+    var jsonData = JSON.stringify(downloadState);
 
-    var state = JSON.parse(data);
-    // console.log("  state: " + state);
+    var headers = {
+        'Content-Type': 'application/json',
+        'Content-Length': jsonData.length
+    };
 
-    logic.updateState(state);
-
-    response.writeHead(200, {"Content-Type": "text/plain"});
-    response.end("OK (reportState)");
+    response.writeHead(200, headers);
+    response.end(jsonData);
 }
 
 
 // *** Operator to Server ***
 
-// /sample_list
 function sampleList(request, query, data, response)
 {
     console.log("Function getSampleList called...");
@@ -94,6 +85,7 @@ function setMaintenanceLight(request, query, data, response)
     response.writeHead(200, { 'Content-Type': 'text/plain', });
 
     if(value == 'on') {
+        logic.setMaintRequested(true);
         fs.open(config.maint_touch_file_path, "wx", function (err, fd) {
             if(!err) {
                 fs.close(fd, function (err) {
@@ -108,6 +100,7 @@ function setMaintenanceLight(request, query, data, response)
         response.write('Maintenance light turned on');
     }
     else {
+        logic.setMaintRequested(false);
         fs.unlink(config.maint_touch_file_path, function (err) { /* ignore err for missing file */ });
         console.log('Maintenance light turned off');
         response.write('Maintenance light turned off');
@@ -116,54 +109,7 @@ function setMaintenanceLight(request, query, data, response)
     response.end();
 }
 
-// not used...
-// Operator requests network state
-//     <server>/getNetworkState
-//
-// Returns JSON object. See logic.js  for details.
-function getNetworkState(request, query, data, response)
-{
-    console.log("Function getNetworkState called...");
-
-    var networkState = logic.getNetworkState();
-
-    var jsonData = JSON.stringify(networkState);
-
-    var headers = {
-        'Content-Type': 'application/json',
-        'Content-Length': jsonData.length
-    };
-
-    response.writeHead(200, headers);
-    response.end(jsonData);
-}
-
-// not used...
-// Operator sets device state using a query string
-//     <server>/setState?agent_id=<string>&face=<1..6>
-//
-// For test, probably not needed longterm.
-function setState(request, query, data, response) 
-{
-    console.log("Function setState called...");
-
-    var state = querystring.parse(query);
-    console.log("    query: " + query);
-    if(data)
-        console.log("    data:  " + data);
-
-    logic.updateState(state);
-
-    response.writeHead(200, {"Content-Type": "text/plain"});
-    response.end("OK (setState)");
-}
-
 exports.test                = test;
 exports.sampleList          = sampleList;
 exports.setMaintenanceLight = setMaintenanceLight;
-
-//exports.uploadSample    = uploadSample;
-//exports.reportState     = reportState;
-//exports.getNetworkState = getNetworkState;
-//exports.setState        = setState;
-
+exports.exchangeDeviceState = exchangeDeviceState;

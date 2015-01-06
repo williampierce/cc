@@ -13,7 +13,7 @@
     "name": "William Pierce"
   },
   "dependencies": {
-      "lodash" : "*",
-      "socket.io": "^1.2.1"
+    "lodash": "^2.4.1",
+    "superagent": "^0.21.0"
   }
 }

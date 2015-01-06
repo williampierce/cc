@@ -3,7 +3,7 @@ var url       = require('url');
 var fs        = require('fs');
 var path      = require('path');
 var config    = require('../common/config').server_config;
-var clientMgr = require('./clientMgr');
+var logic     = require('./logic');
 
 // Given a routing function and a mapping from pathnames to request handlers, this
 // function will create a server to handle http requests on port config.server_port.
@@ -30,6 +30,9 @@ function start(route, handle)
 
         serveJsonRequest(route, handle, request, response);
     }
+
+    // Synchronous initialization on startup
+    logic.initSync();
 
     var server = http.createServer(onRequest);
     server.listen(config.server_port); 

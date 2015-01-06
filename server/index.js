@@ -21,6 +21,7 @@ catch(error)
 handle["/test"] = requestHandlers.test;
 
 // Device requests
+handle["/exchange_device_state"] = requestHandlers.exchangeDeviceState;
 
 // User requests
 handle["/sample_list"]           = requestHandlers.sampleList;
