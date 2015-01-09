@@ -10,7 +10,8 @@ function loadWave(jqueryWaveName, jqueryWaveContainer, wave_path)
         container: jqueryWaveContainer[0],
         waveColor: '#00F0F0',
         progressColor: '#00A0A0',
-        cursorWidth: 0
+        cursorWidth: 0,
+        normalize: true
     });
     wavesurfer.load(wave_path);
 
