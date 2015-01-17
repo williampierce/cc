@@ -22,6 +22,9 @@ def mkdir_p(path):
         else:
             raise
 
+def touch_file(file_path):
+    open(file_path, 'a').close()
+
 def get_timestamp():
     return datetime.now().strftime("%Y.%m.%d.%H.%M.%S")
 
@@ -39,7 +42,7 @@ def main():
 
     parser.add_argument("-d", "--duration", type=int,
                         default=DEFAULT_DURATION_SECS,
-                        help="Duration of each sample (default {})".format(DEFAULT_DURATION_SECS))
+                        help="Duration of each sample (default {} seconds)".format(DEFAULT_DURATION_SECS))
 
     parser.add_argument("-n", "--number_samples", type=int,
                         default=DEFAULT_NUMBER_SAMPLES,
@@ -55,7 +58,7 @@ def main():
 
     # Check for sample directories already present
     # Sample folders have the form Samples_<number>_timestamp
-    sample_folder_list = glob.glob(os.path.join(args.root_dir, 'Samples') + '_[0-9]*_*')
+    sample_folder_list = glob.glob(os.path.join(args.root_dir, 'Samples') + '_[0-9]*')
     print "Found {} sample folders".format(len(sample_folder_list))
     new_folder_number = 0
     for folder_name in sample_folder_list:
@@ -65,27 +68,45 @@ def main():
 
     print "New folder number: {}".format(new_folder_number)
 
+    # Create comment string if the comment contains non-blank characters
+    # Create sample folder name
+    if(args.comment and args.comment.strip(" ")):
+        comment_string = args.comment.strip(" ").replace(" ", "_")
+        summary_string = "d{0}_n{1}__{2}".format(args.duration, args.number_samples, comment_string)
+        # sample_folder_name = "Samples_{0}_{1}".format(str(new_folder_number).zfill(3), get_timestamp())
+        sample_folder_name = "Samples_{0}_{1}".format(str(new_folder_number).zfill(3), summary_string)
+    else:
+        summary_string = "d{0}_n{1}".format(args.duration, args.number_samples)
+        sample_folder_name = "Samples_{0}".format(str(new_folder_number).zfill(3))
+
     # Create folder for samples
-    sample_folder_name = "Samples_{0}_{1}".format(str(new_folder_number).zfill(3), get_timestamp())
+    sample_folder_name = "Samples_{0}__{1}".format(str(new_folder_number).zfill(3), summary_string)
     sample_dir_path = os.path.join(args.root_dir, sample_folder_name)
     print "Creating sample directory: " + sample_dir_path
     mkdir_p(sample_dir_path)
 
-    # Place comment file in directory
+    # Place comment file in sample folder
     if(args.comment):
-        comment_filename = "_{}_".format(args.comment).replace(" ", "_")
-        # comment_path = os.path.join(sample_dir_path, comment_filename.replace(" ", "_"))
-        comment_path = os.path.join(sample_dir_path, comment_filename)
-        open(comment_path, 'a').close()
+        summary_filename = "__{}__".format(summary_string)
+        summary_path = os.path.join(sample_dir_path, summary_filename)
+        touch_file(summary_path)
+
+    start_timestamp = get_timestamp()
 
     for i in range(args.number_samples):
         # Create sample path for audio file
-        sample_filename = "sample_{0}_{1}.wav".format(str(i).zfill(3), get_timestamp())
+        sample_filename = "sample_{0}.wav".format(str(i).zfill(3))
 
         sample_path = os.path.join(sample_dir_path, sample_filename)
-        print "[{0}] ********** Collecting sample: {1} **********".format(i, sample_filename)
+        print "[{0}/{1}] ********** {2} **********".format(i+1, args.number_samples, sample_filename)
 
         sample_audio(sample_path, args.duration)
+
+    end_timestamp = get_timestamp()
+    timestamp_touch_filename = "__{0}__to__{1}__".format(start_timestamp, end_timestamp)
+    #timestamp_touch_file_path = os.path.join(sample_dir_path, timestamp_touch_filename)
+    touch_file(os.path.join(sample_dir_path, timestamp_touch_filename))
+
 
 if __name__ == "__main__":
     main()

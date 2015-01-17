@@ -110,20 +110,28 @@ def test():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("input",
-                        help=".wav input file")
+    parser.add_argument("start",
+                        help="index of first sample file to plot")
+
+    parser.add_argument("count",
+                        help="number of successive sample_NNN.wav input files")
 
     parser.add_argument("freq_limit",
                         help="highest frequency to plot")
 
-    args         = parser.parse_args()
-    wav_filename = args.input
-    freq_limit   = args.freq_limit
-    dat_filename = ""
+    args = parser.parse_args()
+    start = int(args.start)
+    count = int(args.count)
+    freq_limit = int(args.freq_limit)
 
-    print "input: " + wav_filename + ", freq_limit: " + freq_limit
-    Fs, data = read(wav_filename)
-    displayWaveAndSpectrum(data, Fs, int(freq_limit))
+    for i in range(count):
+        subplot(count, 1, i+1)
+        index = start + i
+        wav_filename = "sample_{}.wav".format(str(index).zfill(3))
+        Fs, data = read(wav_filename)
+        plotSpectrum(data, Fs, freq_limit)
+    show()
+
     
 if __name__ == "__main__":
     #test()
