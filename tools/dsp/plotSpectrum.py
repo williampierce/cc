@@ -1,94 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-import scipy
-
-from numpy import sin, linspace, pi, log2
-from pylab import plot, show, title, xlabel, ylabel, subplot
-from scipy import fft, arange
+from pylab import show, subplot
 from scipy.io.wavfile import read
 
-def getFFT(y, Fs, freq_limit=0):
-    """
-    Computes a Single-Sided Amplitude Spectrum of y(t), and returns freq, amplitude
-    """
-    n = len(y)            # length of the signal
-    max_freq = Fs/2
-    max_index = n/2
-
-    if(freq_limit > 0 and freq_limit < max_freq):
-        # Scale the index for the desired freq_limit: max_index * (freq_limit/max_freq)
-        max_index = int(max_index * float(freq_limit)/max_freq)
-
-    k = arange(n)         # sample indices
-    T = float(n)/Fs       # duration of signal
-    frq = k/T             # two sides frequency range (0..#samples/#seconds)
-    frq = frq[:max_index] # one side frequency range
-
-    Y = fft(y)/n          # fft computing and normalization
-    Y = Y[:max_index]
-    return frq, abs(Y)
-
-def plotLogSpectrum(y, Fs, freq_limit=0):
-    """
-    plot spectrum on a log-frequency scale
-    """
-    frq, ampl = getFFT(y, Fs, freq_limit)
-    log_frq = log2(frq[1:])  # don't take log(0)
-    display_ampl = log2(ampl[1:])
-    plot(log_frq, display_ampl, 'r')    # plotting the spectrum
-    xlabel('Freq (Hz)')
-    ylabel('|Y(freq)|')
-
-def plotSmoothLogSpectrum(y, Fs, freq_limit=0):
-    """
-    plot spectrum on a log-frequency scale, then convolve with a gaussian filter
-    """
-    frq, ampl = getFFT(y, Fs, freq_limit)
-    log_frq = log2(frq[1:])  # don't take log(0)
-    log_ampl = log2(ampl[1:])
-
-    # Smooth the amplitude
-    # gauss_filter = scipy.signal.gaussian(
-
-    plot(log_frq, log_ampl, 'r')    # plotting the spectrum
-    xlabel('Log Freq (Hz)')
-    ylabel('|Y(freq)|')
-
-def plotSpectrum(y,Fs, freq_limit=0):
-    """
-    Plots a Single-Sided Amplitude Spectrum of y(t)
-    """
-    n = len(y)            # length of the signal
-    max_freq = Fs/2
-    max_index = n/2
-
-    if(freq_limit > 0 and freq_limit < max_freq):
-        # Scale the index for the desired freq_limit: max_index * (freq_limit/max_freq)
-        max_index = int(max_index * float(freq_limit)/max_freq)
-
-    k = arange(n)         # sample indices
-    T = float(n)/Fs       # duration of signal
-    frq = k/T             # two sides frequency range (0..#samples/#seconds)
-    frq = frq[:max_index] # one side frequency range
-
-    Y = fft(y)/n # fft computing and normalization
-    Y = Y[:max_index]
-
-    plot(frq, abs(Y), 'r') # plotting the spectrum
-    xlabel('Freq (Hz)')
-    ylabel('|Y(freq)|')
-
-def plotWave(y, Fs):
-    """
-    Plots waveform y having sample frequency Fs
-    """
-    n = len(y)
-    T = n/Fs
-    t = arange(0, T, 1.0/Fs)
-    plot(t, y)
-    xlabel('Time')
-    ylabel('Amplitude')
+from plotUtils import plotSpectrum, plotLogSpectrum
 
 def displayWaveAndSpectrum(y, Fs, freq_limit=0):
     subplot(2,1,1)      # multiple plots: 2 rows, 1 column, 1st plot
@@ -96,17 +12,6 @@ def displayWaveAndSpectrum(y, Fs, freq_limit=0):
     subplot(2,1,2)      # ... second plot
     plotSpectrum(y,Fs, freq_limit)
     show()
-
-def test():
-    Fs = 150.0;  # sampling rate
-    Ts = 1.0/Fs; # sampling interval
-    t = arange(0,1,Ts) # time vector
-
-    ff = 5;   # frequency of the signal
-    y = sin(2*pi*ff*t)
-
-    displayWaveAndSpectrum(y, Fs)
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -126,6 +31,5 @@ def main():
     displayWaveAndSpectrum(data, Fs, int(freq_limit))
     
 if __name__ == "__main__":
-    #test()
     main()
 

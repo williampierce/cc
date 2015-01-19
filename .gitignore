@@ -30,5 +30,8 @@ node_modules
 # vim
 *.swp
 
+# python
+*.pyc
+
 tmp
 data
