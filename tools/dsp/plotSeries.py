@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pylab import show, subplot
 from scipy.io.wavfile import read
 
-from plotUtils import plotSpectrum
+from plotUtils import plot_spectrum
 
 DEFAULT_NUMBER_SAMPLES = 5
 
@@ -45,7 +45,7 @@ def main():
         wav_filename = "sample_{}.wav".format(str(index).zfill(3))
         wav_path = os.path.join(args.folder, wav_filename)
         Fs, data = read(wav_path)
-        plotSpectrum(data, Fs, upper_frequency)
+        plot_spectrum(data, Fs, upper_frequency)
 
     plt.suptitle(args.folder)
     show()

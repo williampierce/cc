@@ -4,13 +4,13 @@ import argparse
 from pylab import show, subplot
 from scipy.io.wavfile import read
 
-from plotUtils import plotSpectrum, plotLogSpectrum
+from plotUtils import plot_spectrum, plot_log_spectrum
 
-def displayWaveAndSpectrum(y, Fs, freq_limit=0):
+def display_wave_and_spectrum(y, Fs, freq_limit=0):
     subplot(2,1,1)      # multiple plots: 2 rows, 1 column, 1st plot
-    plotLogSpectrum(y, Fs)
+    plot_log_spectrum(y, Fs)
     subplot(2,1,2)      # ... second plot
-    plotSpectrum(y,Fs, freq_limit)
+    plot_spectrum(y,Fs, freq_limit)
     show()
 
 def main():
@@ -28,7 +28,7 @@ def main():
 
     print "input: " + wav_filename + ", freq_limit: " + freq_limit
     Fs, data = read(wav_filename)
-    displayWaveAndSpectrum(data, Fs, int(freq_limit))
+    display_wave_and_spectrum(data, Fs, int(freq_limit))
     
 if __name__ == "__main__":
     main()

@@ -5,24 +5,44 @@ import os
 import glob
 import re
 import numpy as np
-from scipy.io.wavfile import read
+import matplotlib.pyplot as plt
 
-from dspUtils import getFFT
+from scipy.io.wavfile import read
+from mpl_toolkits.mplot3d import Axes3D
+
+from dspUtils import get_fft, get_histogram
 
 DEFAULT_NUMBER_SAMPLES = 5
 DEFAULT_NUMBER_BINS = 8
 
-def GetHistogram(y_values, number_bins):
-    # Partition the y_values evenly
-    number_entries = len(y_values)
-    histogram = []
-    min_bin_index = 0
-    for bin_count in range(1, number_bins+1):
-        max_bin_index = number_entries * bin_count / number_bins
-        histogram.append(sum(y_values[min_bin_index:max_bin_index]))
-        min_bin_index = max_bin_index
+def get_label_color_map(labels):
+    colors = ['r', 'g', 'b', 'y', 'c', 'm']
+    label_color_map = {}
+    next_color = 0
+    for label in labels:
+        if label not in label_color_map:
+            label_color_map[label] = colors[next_color]
+            next_color = (next_color + 1) % len(colors)
 
-    return histogram
+    return label_color_map
+
+def plot_features_3d(features, labels):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    xs = np.arange(len(features[0]))
+    label_color_map = get_label_color_map(labels)
+
+    for index in range(len(features)):
+        ys = np.array(features[index])
+        label_color = label_color_map[labels[index]]
+        ax.bar(xs, ys, zs=index, zdir='y', color=label_color, alpha=0.7)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
+    
 
 def main():
     parser = argparse.ArgumentParser(
@@ -78,14 +98,15 @@ def main():
         sample_list = glob.glob(os.path.join(sample_folder, 'sample') + '_[0-9]*')
         for wav_path in sample_list:
             Fs, data = read(wav_path)
-            frq, ampl = getFFT(data, Fs, upper_frequency)
-            feature_set_array.append(GetHistogram(ampl, number_bins))
+            frq, ampl = get_fft(data, Fs, upper_frequency)
+            feature_set_array.append(get_histogram(ampl, number_bins))
             label_array.append(label)
 
     print feature_set_array
     print
     print label_array
+    plot_features_3d(feature_set_array, label_array)
 
-    
+ 
 if __name__ == "__main__":
     main()
