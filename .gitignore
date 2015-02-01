@@ -32,6 +32,9 @@ node_modules
 
 # python
 *.pyc
+PyCharm
+.ipynb_checkpoints
 
 tmp
 data
+*.backup
