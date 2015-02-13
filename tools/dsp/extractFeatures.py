@@ -110,19 +110,18 @@ def get_label_features_map(dataset, upper_frequency, number_bins):
     return label_features_map
 
 
-def partition_dataset(label_features_map):
+def partition_dataset(label_features_map, train_fraction):
     """Break a dataset into feature and label arrays for training and test
     :param label_features_map: dictionary mapping labels to feature set arrays
     :return: features_train, labels_train, features_test, labels_test
     """
     # Create sklearn-compatible features and labels
-    train_fraction = 0.8
-    features_train = []
-    features_test = []
     features = []
-    labels_train = []
-    labels_test = []
     labels = []
+    features_train = []
+    labels_train = []
+    features_test = []
+    labels_test = []
     for label, feature_set_list in label_features_map.items():
         sample_count = len(feature_set_list)
         features += feature_set_list
@@ -133,9 +132,10 @@ def partition_dataset(label_features_map):
         labels_train += [label] * train_count
 
         features_test += feature_set_list[train_count:]
-        labels_test += [label] * (sample_count - train_count + 1)
+        labels_test += [label] * (sample_count - train_count)
 
-    print "Samples: {0}, train: {1}, test: {2}".format(len(features), len(features_train), len(features_test))
+    print "Samples: {0}, train: {1}/{2}, test: {3}/{4}".format(
+        len(features), len(features_train), len(labels_train), len(features_test), len(labels_test))
     return features_train, labels_train, features_test, labels_test
 
 
@@ -164,11 +164,11 @@ def main():
 
     label_features_map = get_label_features_map(args.dataset, upper_frequency, number_bins)
 
-    features_train, labels_train, features_test, labels_test = partition_dataset(label_features_map)
+    features_train, labels_train, features_test, labels_test = partition_dataset(label_features_map, train_fraction=0.8)
 
-    print features_train
-    print
-    print features_test
+    #print features_train
+    #print
+    #print features_test
 
     #plot_features_3d(features, labels)
     #plot_features_3d(features_train, labels_train)
