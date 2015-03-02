@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import glob
 import argparse
 import matplotlib.pyplot as plt
 from pylab import show, subplot
@@ -11,9 +12,17 @@ from plotUtils import plot_spectrum
 DEFAULT_NUMBER_SAMPLES = 5
 
 
-def plot_series(folder, start=0, number_samples=DEFAULT_NUMBER_SAMPLES, upper_frequency=0):
+def plot_series(folder_prefix, start=0, number_samples=DEFAULT_NUMBER_SAMPLES, upper_frequency=0):
     plt.rcParams['figure.figsize'] = (24.0, 16.0)
     plt.axis("off")
+
+    # Allow the folder prefix, e.g., "Samples_000" to suffice in specifying the folder
+    folder_matches = glob.glob(folder_prefix + '*')
+    if len(folder_matches) >= 1:
+        folder = folder_matches[0]
+    else:
+        print "Failed to find sample folder with prefix {}".format(folder_prefix)
+        return
 
     for i in range(number_samples):
         plt.subplot(number_samples, 1, i + 1)

@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 from numpy import log2
 from scipy import arange
+#from mpl_toolkits.mplot3d import Axes3D
 
 from dspUtils import get_fft
 
@@ -54,3 +55,23 @@ def plot_wave(y, Fs):
     plt.xlabel('Time')
     plt.ylabel('Amplitude')
 
+def plot_features_3d(features, labels):
+    """
+    Plot a 3D collection of histograms with different colors for different labels.
+    Most effective if the features for a given label occur together.
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    xs = np.arange(len(features[0]))
+    label_color_map = get_label_color_map(labels)
+
+    for index in range(len(features)):
+        ys = np.array(features[index])
+        label_color = label_color_map[labels[index]]
+        ax.bar(xs, ys, zs=index, zdir='y', color=label_color, alpha=0.7)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()

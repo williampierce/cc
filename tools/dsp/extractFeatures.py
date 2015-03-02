@@ -6,10 +6,8 @@ import glob
 import re
 import itertools
 import numpy as np
-import matplotlib.pyplot as plt
 
 from scipy.io.wavfile import read
-from mpl_toolkits.mplot3d import Axes3D
 
 from dspUtils import get_fft, get_histogram
 
@@ -27,27 +25,6 @@ def get_label_color_map(labels):
 
     return label_color_map
 
-def plot_features_3d(features, labels):
-    """
-    Plot a 3D collection of histograms with different colors for different labels.
-    Most effective if the features for a given label occur together.
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    xs = np.arange(len(features[0]))
-    label_color_map = get_label_color_map(labels)
-
-    for index in range(len(features)):
-        ys = np.array(features[index])
-        label_color = label_color_map[labels[index]]
-        ax.bar(xs, ys, zs=index, zdir='y', color=label_color, alpha=0.7)
-
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    plt.show()
-    
 
 def run_classifier(clf, features_train, labels_train, features_test, labels_test):
     X = np.array(features_train)
@@ -105,7 +82,10 @@ def get_label_features_map(dataset, upper_frequency, number_bins):
             frq, ampl = get_fft(data, Fs, upper_frequency)
             feature_set_list.append(get_histogram(ampl, number_bins))
 
-        label_features_map[label] = feature_set_list
+        if label in label_features_map:
+            label_features_map[label].extend(feature_set_list)
+        else:
+            label_features_map[label] = feature_set_list
 
     return label_features_map
 
