@@ -6,6 +6,7 @@ import glob
 import re
 import itertools
 import numpy as np
+from sklearn import preprocessing
 
 from scipy.io.wavfile import read
 
@@ -64,7 +65,7 @@ def get_sample_set_label(sample_folder):
 
 
 def get_label_samples_map(dataset, upper_frequency, number_bins):
-    """Create a dictionary mapping labels to arrays of feature sets
+    """Create a dictionary mapping labels to normalized (mean=0, std=1) numpy arrays of feature sets
     :param dataset: absolute path to a folder of sample folders
     :rtype: dict, str -> array
     """
@@ -76,21 +77,22 @@ def get_label_samples_map(dataset, upper_frequency, number_bins):
 
         # Collect samples for each sample
         sample_list = glob.glob(os.path.join(sample_folder, 'sample') + '_[0-9]*')
-        feature_set_list = []
+        samples = []
         for wav_path in sample_list:
             Fs, data = read(wav_path)
             frq, ampl = get_fft(data, Fs, upper_frequency)
-            feature_set_list.append(get_histogram(ampl, number_bins))
+            samples.append(get_histogram(ampl, number_bins))
 
         if label in label_samples_map:
-            label_samples_map[label].extend(feature_set_list)
+            label_samples_map[label].extend(samples)
         else:
-            label_samples_map[label] = feature_set_list
+            label_samples_map[label] = samples
 
-    # Convert to np arrays
+    # Convert to np arrays and normalize
     np_label_samples_map = {}
-    for label, feature_set_list in label_samples_map.items():
-        np_label_samples_map[label] = np.array(feature_set_list)
+    for label, samples in label_samples_map.items():
+        #np_label_samples_map[label] = preprocessing.scale(np.array(samples))
+        np_label_samples_map[label] = np.array(samples)
 
     return np_label_samples_map
 
@@ -104,23 +106,23 @@ def partition_dataset(num_features, label_samples_map, train_fraction):
     labels = []
     labels_train = []
     labels_test = []
-    samples = np.empty([0, num_features])
+    samples_all = np.empty([0, num_features])
     samples_train = np.empty([0, num_features])
     samples_test = np.empty([0, num_features])
-    for label, feature_set_list in label_samples_map.items():
-        sample_count = len(feature_set_list)
+    for label, samples in label_samples_map.items():
+        sample_count = len(samples)
         train_count = int(sample_count * train_fraction)
 
         labels += [label] * sample_count
         labels_train += [label] * train_count
         labels_test += [label] * (sample_count - train_count)
 
-        samples = np.append(samples, feature_set_list, 0)
-        samples_train = np.append(samples_train, feature_set_list[:train_count], 0)
-        samples_test = np.append(samples_test, feature_set_list[train_count:], 0)
+        samples_all = np.append(samples_all, samples, 0)
+        samples_train = np.append(samples_train, samples[:train_count], 0)
+        samples_test = np.append(samples_test, samples[train_count:], 0)
 
     print "Samples: {0}, train: {1}/{2}, test: {3}/{4}".format(
-        len(samples), len(samples_train), len(labels_train), len(samples_test), len(labels_test))
+        len(samples_all), len(samples_train), len(labels_train), len(samples_test), len(labels_test))
     return samples_train, labels_train, samples_test, labels_test
 
 
