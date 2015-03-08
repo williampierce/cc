@@ -6,11 +6,12 @@ import glob
 import re
 import itertools
 import numpy as np
+import scipy as sp
 from sklearn import preprocessing
 
 from scipy.io.wavfile import read
 
-from dspUtils import get_fft, get_histogram
+from dspUtils import get_fft
 
 DEFAULT_NUMBER_SAMPLES = 5
 DEFAULT_NUMBER_BINS = 8
@@ -69,30 +70,51 @@ def get_label_samples_map(dataset, upper_frequency, number_bins):
     :param dataset: absolute path to a folder of sample folders
     :rtype: dict, str -> array
     """
+
+    # We'll compute the mean and std using a one-pass online algorithm.
+    # (See http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance.)
+    sample_count = 0
+    sample_mean = np.zeros(number_bins)
+    sample_sum_squares = np.zeros(number_bins)
+
     # Iterate through sample subfolders in the dataset directory
     sample_folder_list = glob.glob(os.path.join(dataset, 'Samples') + '_[0-9]*')
     label_samples_map = {}
     for sample_folder in sample_folder_list:
         label = get_sample_set_label(sample_folder)
 
-        # Collect samples for each sample
+        # Create samples by extracting features from each wave file
         sample_list = glob.glob(os.path.join(sample_folder, 'sample') + '_[0-9]*')
-        samples = []
+        samples = np.empty([0, number_bins])
         for wav_path in sample_list:
             Fs, data = read(wav_path)
             frq, ampl = get_fft(data, Fs, upper_frequency)
-            samples.append(get_histogram(ampl, number_bins))
+            new_sample, bin_edges = np.histogram(ampl, number_bins, density=True)
+            samples = np.append(samples, [new_sample], 0)
+
+            # Update mean and variance
+            sample_count += 1
+            delta = new_sample - sample_mean
+            sample_mean += delta/sample_count
+            sample_sum_squares += delta*(new_sample - sample_mean)
 
         if label in label_samples_map:
-            label_samples_map[label].extend(samples)
+            # Handle multiple sample folders with the same label
+            label_samples_map[label] = np.append(label_samples_map[label], samples)
         else:
             label_samples_map[label] = samples
 
-    # Convert to np arrays and normalize
+    # Use collected statistics to normalize data set
+    sample_std = np.sqrt(sample_sum_squares/(sample_count-1)) if sample_count >= 2 else 1.0
+
+    np.set_printoptions(precision=3)
+    print "Mean: {}, Std: {}".format(sample_mean, sample_std)
+
     np_label_samples_map = {}
     for label, samples in label_samples_map.items():
+        # Normalize samples
         #np_label_samples_map[label] = preprocessing.scale(np.array(samples))
-        np_label_samples_map[label] = np.array(samples)
+        np_label_samples_map[label] = (samples - sample_mean)/sample_std
 
     return np_label_samples_map
 
@@ -155,8 +177,12 @@ def main():
         partition_dataset(number_bins, label_samples_map, train_fraction=0.8)
 
     #print samples_train
-    #print
+    print
+    print "Train mean: {}, std: {}".format(np.mean(samples_train, 0), np.std(samples_train, 0))
+    print
     #print samples_test
+    print "Test mean: {}, std: {}".format(np.mean(samples_test, 0), np.std(samples_test, 0))
+    print
 
     #plot_samples_3d(samples, labels)
     #plot_samples_3d(samples_train, labels_train)

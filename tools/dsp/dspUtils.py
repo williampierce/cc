@@ -23,6 +23,7 @@ def get_fft(y, Fs, upper_frequency=0):
     Y = Y[:max_index]
     return frq, abs(Y)
 
+'''
 def get_histogram(y_values, number_bins):
     # Partition the y_values evenly
     number_entries = len(y_values)
@@ -37,3 +38,4 @@ def get_histogram(y_values, number_bins):
         min_bin_index = max_bin_index
 
     return histogram/total_sum
+'''
