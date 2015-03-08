@@ -63,18 +63,18 @@ def get_sample_set_label(sample_folder):
     return label
 
 
-def get_label_features_map(dataset, upper_frequency, number_bins):
+def get_label_samples_map(dataset, upper_frequency, number_bins):
     """Create a dictionary mapping labels to arrays of feature sets
     :param dataset: absolute path to a folder of sample folders
     :rtype: dict, str -> array
     """
     # Iterate through sample subfolders in the dataset directory
     sample_folder_list = glob.glob(os.path.join(dataset, 'Samples') + '_[0-9]*')
-    label_features_map = {}
+    label_samples_map = {}
     for sample_folder in sample_folder_list:
         label = get_sample_set_label(sample_folder)
 
-        # Collect features for each sample
+        # Collect samples for each sample
         sample_list = glob.glob(os.path.join(sample_folder, 'sample') + '_[0-9]*')
         feature_set_list = []
         for wav_path in sample_list:
@@ -82,41 +82,46 @@ def get_label_features_map(dataset, upper_frequency, number_bins):
             frq, ampl = get_fft(data, Fs, upper_frequency)
             feature_set_list.append(get_histogram(ampl, number_bins))
 
-        if label in label_features_map:
-            label_features_map[label].extend(feature_set_list)
+        if label in label_samples_map:
+            label_samples_map[label].extend(feature_set_list)
         else:
-            label_features_map[label] = feature_set_list
+            label_samples_map[label] = feature_set_list
 
-    return label_features_map
+    # Convert to np arrays
+    np_label_samples_map = {}
+    for label, feature_set_list in label_samples_map.items():
+        np_label_samples_map[label] = np.array(feature_set_list)
+
+    return np_label_samples_map
 
 
-def partition_dataset(label_features_map, train_fraction):
+def partition_dataset(num_features, label_samples_map, train_fraction):
     """Break a dataset into feature and label arrays for training and test
-    :param label_features_map: dictionary mapping labels to feature set arrays
-    :return: features_train, labels_train, features_test, labels_test
+    :param label_samples_map: dictionary mapping labels to feature set arrays
+    :return: samples_train, labels_train, samples_test, labels_test
     """
-    # Create sklearn-compatible features and labels
-    features = []
+    # Create sklearn-compatible samples and labels
     labels = []
-    features_train = []
     labels_train = []
-    features_test = []
     labels_test = []
-    for label, feature_set_list in label_features_map.items():
+    samples = np.empty([0, num_features])
+    samples_train = np.empty([0, num_features])
+    samples_test = np.empty([0, num_features])
+    for label, feature_set_list in label_samples_map.items():
         sample_count = len(feature_set_list)
-        features += feature_set_list
-        labels += [label] * sample_count
-
         train_count = int(sample_count * train_fraction)
-        features_train += feature_set_list[:train_count]
-        labels_train += [label] * train_count
 
-        features_test += feature_set_list[train_count:]
+        labels += [label] * sample_count
+        labels_train += [label] * train_count
         labels_test += [label] * (sample_count - train_count)
 
+        samples = np.append(samples, feature_set_list, 0)
+        samples_train = np.append(samples_train, feature_set_list[:train_count], 0)
+        samples_test = np.append(samples_test, feature_set_list[train_count:], 0)
+
     print "Samples: {0}, train: {1}/{2}, test: {3}/{4}".format(
-        len(features), len(features_train), len(labels_train), len(features_test), len(labels_test))
-    return features_train, labels_train, features_test, labels_test
+        len(samples), len(samples_train), len(labels_train), len(samples_test), len(labels_test))
+    return samples_train, labels_train, samples_test, labels_test
 
 
 def main():
@@ -142,34 +147,35 @@ def main():
     number_bins = int(args.number_bins)
     upper_frequency = int(args.upper_frequency)
 
-    label_features_map = get_label_features_map(args.dataset, upper_frequency, number_bins)
+    label_samples_map = get_label_samples_map(args.dataset, upper_frequency, number_bins)
 
-    features_train, labels_train, features_test, labels_test = partition_dataset(label_features_map, train_fraction=0.8)
+    samples_train, labels_train, samples_test, labels_test =\
+        partition_dataset(number_bins, label_samples_map, train_fraction=0.8)
 
-    #print features_train
+    #print samples_train
     #print
-    #print features_test
+    #print samples_test
 
-    #plot_features_3d(features, labels)
-    #plot_features_3d(features_train, labels_train)
-    #plot_features_3d(features_test, labels_test)
+    #plot_samples_3d(samples, labels)
+    #plot_samples_3d(samples_train, labels_train)
+    #plot_samples_3d(samples_test, labels_test)
 
 
     from sklearn.tree import DecisionTreeClassifier
     clf = DecisionTreeClassifier()
-    run_classifier(clf, features_train, labels_train, features_test, labels_test)
+    run_classifier(clf, samples_train, labels_train, samples_test, labels_test)
 
     from sklearn import svm
     clf = svm.SVC(kernel='linear')
-    run_classifier(clf, features_train, labels_train, features_test, labels_test)
+    run_classifier(clf, samples_train, labels_train, samples_test, labels_test)
 
     from sklearn.neighbors import KNeighborsClassifier
     knn = KNeighborsClassifier(n_neighbors=10)
-    run_classifier(knn, features_train, labels_train, features_test, labels_test)
+    run_classifier(knn, samples_train, labels_train, samples_test, labels_test)
 
     from sklearn.neighbors.nearest_centroid import NearestCentroid
     nc = NearestCentroid()
-    run_classifier(nc, features_train, labels_train, features_test, labels_test)
+    run_classifier(nc, samples_train, labels_train, samples_test, labels_test)
 
 
 if __name__ == "__main__":
