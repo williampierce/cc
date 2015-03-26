@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import time
 import glob
 import re
 import itertools
@@ -13,12 +14,21 @@ from dspUtils import get_fft
 
 DEFAULT_NUMBER_BINS = 8
 
+feature_extraction_time = 0.0
+training_time = 0.0
+classification_time = 0.0
+
+
 def run_classifier(clf, features_train, labels_train, features_test, labels_test):
     X = np.array(features_train)
     y = np.array(labels_train)
 
+    start_time = time.clock()
     clf.fit(X, y)
+    global training_time
+    training_time = time.clock() - start_time
 
+    start_time = time.clock()
     test_count = 0
     success_count = 0
     for feature_set, label in itertools.izip(features_test, labels_test):
@@ -30,6 +40,8 @@ def run_classifier(clf, features_train, labels_train, features_test, labels_test
 
         print "Actual: {}, Predicted: {}".format(label, predicted)
 
+    global classification_time
+    classification_time = time.clock() - start_time
     print "Success rate: {}".format(float(success_count)/test_count)
 
 
@@ -159,7 +171,10 @@ def main():
     number_bins = int(args.number_bins)
     upper_frequency = int(args.upper_frequency)
 
+    start_time = time.clock()
     label_samples_map = get_label_samples_map(args.dataset, upper_frequency, number_bins)
+    global feature_extraction_time
+    feature_extraction_time = time.clock() - start_time
 
     samples_train, labels_train, samples_test, labels_test =\
         partition_dataset(number_bins, label_samples_map, train_fraction=0.8)
@@ -175,6 +190,10 @@ def main():
     from sklearn import svm
     clf = svm.SVC(kernel='linear')
     run_classifier(clf, samples_train, labels_train, samples_test, labels_test)
+
+    print "Feature extraction time: {}".format(feature_extraction_time)
+    print "Training time: {}".format(training_time)
+    print "Classification time: {}".format(classification_time)
 
 
 if __name__ == "__main__":
