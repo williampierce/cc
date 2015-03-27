@@ -29,7 +29,7 @@ def get_timestamp():
     return datetime.now().strftime("%Y.%m.%d.%H.%M.%S")
 
 def sample_audio(sample_path, duration):
-    # rec -r 44100 -b 16 test.wav trim 0 5 // record, 44100 hz, 16 bit, 5 seconds
+    # l // record, 44100 hz, 16 bit, 5 seconds
     cmd_args = ['rec', '-r', '32000', '-b', '16', sample_path, 'trim', '0', str(duration)]
     subprocess.call(args=cmd_args)
 
@@ -85,11 +85,17 @@ def main():
     print "Creating sample directory: " + sample_dir_path
     mkdir_p(sample_dir_path)
 
-    # Place comment file in sample folder
+    # Place args/comment summary file in sample folder
     if(args.comment):
         summary_filename = "__{}__".format(summary_string)
         summary_path = os.path.join(sample_dir_path, summary_filename)
         touch_file(summary_path)
+
+    # Place label file in sample folder
+    if(args.comment):
+        label_filename = "__label__{}".format(comment_string)
+        label_path = os.path.join(sample_dir_path, label_filename)
+        touch_file(label_path)
 
     start_timestamp = get_timestamp()
 

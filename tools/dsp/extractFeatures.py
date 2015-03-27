@@ -74,8 +74,8 @@ def get_label_samples_map(dataset, upper_frequency, number_bins):
     # We'll compute the mean and std using a one-pass online algorithm.
     # (See http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance.)
     sample_count = 0
-    sample_mean = np.zeros(number_bins)
-    sample_sum_squares = np.zeros(number_bins)
+    sample_mean = np.zeros([1, number_bins])
+    sample_sum_squares = np.zeros([1, number_bins])
 
     # Iterate through sample subfolders in the dataset directory
     sample_folder_list = glob.glob(os.path.join(dataset, 'Samples') + '_[0-9]*')
@@ -92,7 +92,7 @@ def get_label_samples_map(dataset, upper_frequency, number_bins):
             new_sample, bin_edges = np.histogram(ampl, number_bins, density=True)
             samples = np.append(samples, [new_sample], 0)
 
-            # Update mean and variance
+            # Update mean and variance accummulators
             sample_count += 1
             delta = new_sample - sample_mean
             sample_mean += delta/sample_count
@@ -108,13 +108,16 @@ def get_label_samples_map(dataset, upper_frequency, number_bins):
     sample_std = np.sqrt(sample_sum_squares/(sample_count-1)) if sample_count >= 2 else 1.0
 
     np.set_printoptions(precision=3)
-    print "Mean: {}, Std: {}".format(sample_mean, sample_std)
+    print "Mean: {}".format(sample_mean)
+    print "Std: {}".format(sample_std)
 
     np_label_samples_map = {}
-    for label, samples in label_samples_map.items():
+    for label, orig_samples in label_samples_map.items():
         # Normalize samples
         #np_label_samples_map[label] = preprocessing.scale(np.array(samples))
-        np_label_samples_map[label] = (samples - sample_mean)/sample_std
+        #np_label_samples_map[label] = (samples - sample_mean)/sample_std
+        np_label_samples_map[label] = orig_samples - sample_mean
+        np_label_samples_map[label] /= sample_std
 
     return np_label_samples_map
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import log2
 from scipy import arange
 #from mpl_toolkits.mplot3d import Axes3D
@@ -35,6 +36,7 @@ def plot_smooth_log_spectrum(y, Fs, upper_frequency=0):
     plt.xlabel('Log Freq (Hz)')
     plt.ylabel('|Y(freq)|')
 
+
 def plot_spectrum(y, Fs, upper_frequency=0):
     """
     Plots a Single-Sided Amplitude Spectrum of y(t)
@@ -44,14 +46,31 @@ def plot_spectrum(y, Fs, upper_frequency=0):
     plt.xlabel('Freq (Hz)')
     plt.ylabel('|Y(freq)|')
 
-def plot_wave(y, Fs):
+
+def plot_correlation(y, Fs, max_overlap_sec=1.0):
+    """
+    Plots a Single-Sided Amplitude Spectrum of y(t)
+    """
+    correlation = np.correlate(y, y, 'same')
+    start = len(correlation)/2
+    stop = start + Fs*max_overlap_sec
+    plt.plot(correlation[start:stop], 'r') # plotting the spectrum
+    plt.xlabel('Offset')
+    plt.ylabel('Correlation')
+
+
+def plot_wave(y, Fs, start_sec=0, stop_sec=0):
     """
     Plots waveform y having sample frequency Fs
     """
     n = len(y)
+    start_idx = start_sec*Fs
+    stop_idx = stop_sec*Fs if stop_sec != 0 else n
     T = n/Fs
     t = arange(0, T, 1.0/Fs)
-    plt.plot(t, y)
+    #t = arange(start_sec, stop_sec, 1.0/Fs)
+    plt.plot(t[start_idx:stop_idx], y[start_idx:stop_idx])
+    #plt.plot(t, y)
     plt.xlabel('Time')
     plt.ylabel('Amplitude')
 
